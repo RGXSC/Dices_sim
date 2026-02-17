@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SC Agility Simulator - LVMH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .controls-panel h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #dee2e6;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #7950f2;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #7950f2;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .control-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 2px solid #dee2e6;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .control-value {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #7950f2;
+            margin-top: 5px;
+        }
+        
+        .control-description {
+            font-size: 0.9em;
+            color: #868e96;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .run-button {
+            flex: 1;
+            max-width: 250px;
+            background: linear-gradient(135deg, #7950f2 0%, #5f3dc4 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(121, 80, 242, 0.4);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(121, 80, 242, 0.6);
+        }
+        
+        .run-button:active {
+            transform: translateY(0);
+        }
+        
+        .run-button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .rerun-button {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            box-shadow: 0 5px 15px rgba(81, 207, 102, 0.4);
+        }
+        
+        .rerun-button:hover {
+            box-shadow: 0 7px 20px rgba(81, 207, 102, 0.6);
+        }
+        
+        .demand-preview {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .demand-preview h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .demand-stores {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .demand-store {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 3px solid #dee2e6;
+        }
+        
+        .demand-store-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        
+        .demand-dice {
+            font-size: 4em;
+            margin: 15px 0;
+        }
+        
+        .demand-level {
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .demand-high { background: #d3f9d8; color: #2b8a3e; }
+        .demand-medium { background: #fff3bf; color: #e67700; }
+        .demand-low { background: #ffe3e3; color: #c92a2a; }
+        
+        .comparison {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .comparison h2 {
+            text-align: center;
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .comparison-item {
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .comparison-item h3 {
+            font-size: 0.85em;
+            color: #868e96;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .comparison-item .value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .winner {
+            background: linear-gradient(135deg, #d3f9d8 0%, #b2f2bb 100%);
+            border: 3px solid #51cf66;
+        }
+        
+        .winner .value {
+            color: #2b8a3e;
+        }
+        
+        .loser {
+            background: linear-gradient(135deg, #ffe3e3 0%, #ffc9c9 100%);
+            border: 3px solid #ff6b6b;
+        }
+        
+        .loser .value {
+            color: #c92a2a;
+        }
+        
+        .neutral {
+            background: linear-gradient(135deg, #e7f5ff 0%, #d0ebff 100%);
+            border: 3px solid #74c0fc;
+        }
+        
+        .neutral .value {
+            color: #1971c2;
+        }
+        
+        .insight {
+            background: #fff3bf;
+            border-left: 5px solid #f08c00;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+        
+        .insight strong {
+            color: #e67700;
+        }
+        
+        .sellthrough-gauge {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .gauge-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        
+        .gauge {
+            text-align: center;
+        }
+        
+        .gauge-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .gauge-bar {
+            height: 40px;
+            background: #e9ecef;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            margin: 10px 0;
+        }
+        
+        .gauge-fill {
+            height: 100%;
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .gauge-fill-AllInStore {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+        }
+        
+        .gauge-fill-agile {
+            background: linear-gradient(90deg, #51cf66 0%, #37b24d 100%);
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        
+        .legend-items {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+        }
+        
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        
+        .legend-inventory { background: #e7f5ff; border: 1px solid #74c0fc; }
+        .legend-sold { background: #d3f9d8; border: 1px solid #51cf66; }
+        .legend-stockout { background: #ffe3e3; border: 1px solid #ff6b6b; }
+        .legend-replenish { background: #d0ebff; border: 2px dashed #1971c2; }
+        
+        .strategies {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .strategy-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .strategy-header {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .AllInStore-header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+        
+        .agile-header {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+            color: white;
+        }
+        
+        .store-timeline {
+            margin-bottom: 25px;
+        }
+        
+        .store-timeline-header {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            color: #495057;
+            border: 2px solid #dee2e6;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .store-demand-info {
+            font-size: 0.9em;
+            color: #868e96;
+        }
+        
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            background: #dee2e6;
+            border: 2px solid #dee2e6;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .week-cell {
+            background: white;
+            padding: 6px 3px;
+            text-align: center;
+            font-size: 0.65em;
+            min-height: 85px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .week-number {
+            font-weight: bold;
+            color: #868e96;
+            font-size: 0.9em;
+            margin-bottom: 3px;
+        }
+        
+        .week-stat {
+            margin: 2px 0;
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 0.95em;
+            line-height: 1.2;
+        }
+        
+        .inventory { background: #e7f5ff; color: #1971c2; font-weight: bold; }
+        .sold { background: #d3f9d8; color: #2b8a3e; font-weight: bold; }
+        .stockout { background: #ffe3e3; color: #c92a2a; }
+        .replenish { background: #d0ebff; color: #1971c2; font-weight: bold; border: 1px dashed #1971c2; }
+        
+        .pnl {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            margin-top: 20px;
+        }
+        
+        .pnl-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .pnl-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 1.3em;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 3px solid #495057;
+        }
+        
+        .pnl-label {
+            color: #495057;
+        }
+        
+        .pnl-value {
+            font-weight: bold;
+        }
+        
+        .positive { color: #2b8a3e; }
+        .negative { color: #c92a2a; }
+        
+        @media (max-width: 1200px) {
+            .strategies {
+                grid-template-columns: 1fr;
+            }
+            
+            .gauge-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .week-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .week-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .demand-stores {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 SC Agility Simulator</h1>
+        <div class="subtitle">Compare AllInStore vs. Agile Strategy Over 10 Weeks</div>
+        
+        <div class="controls-panel">
+            <h2>⚙️ Controls - Design Your Agile Strategy</h2>
+            
+            <div class="control-grid">
+                <div class="control-group">
+                    <label>📦 Central Stock Reserve</label>
+                    <input type="range" id="centralPercent" min="0" max="80" value="40" step="10">
+                    <div class="control-value"><span id="centralValue">40</span>%</div>
+                    <div class="control-description">
+                        Percentage of total inventory held centrally for responsive redeployment.
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>🚚 Replenishment Lead Time</label>
+                    <select id="leadTime">
+                        <option value="1">1 week (Fast)</option>
+                        <option value="2" selected>2 weeks (Standard)</option>
+                        <option value="3">3 weeks (Slow)</option>
+                        <option value="4">4 weeks (Very slow)</option>
+                    </select>
+                    <div class="control-description">
+                        Time to move stock from central hub to stores.
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>📊 Gross Margin</label>
+                    <input type="range" id="grossMargin" min="10" max="70" value="40" step="5">
+                    <div class="control-value"><span id="grossMarginValue">40</span>%</div>
+                    <div class="control-description">
+                        Gross margin on full price sales.
+                    </div>
+                </div>
+                
+				<div class="control-group">
+					<label>💸 Markdown Rate</label>
+					<input type="range" id="markdownRate" min="30" max="70" value="50" step="5">
+					<div class="control-value"><span id="markdownValue">50</span>%</div>
+					<div class="control-description">
+						Discount on clearance sales (unsold inventory sold at reduced price)
+					</div>
+				</div>
+
+            </div>
+            
+            <div class="button-group">
+				<button class="run-button" onclick="rollNewDice()">
+					🎲 New Dice Roll
+				</button>
+
+                <button class="run-button rerun-button" id="rerunBtn" onclick="rerunSimulation()" style="display: none;">
+                    🔄 Re-run with Same Dice
+                </button>
+            </div>
+        </div>
+        
+        <div class="demand-preview" id="demand-preview">
+            <h2>🎯 Market Demand Pattern (Repeats for 10 Weeks)</h2>
+            <div class="demand-stores" id="demand-stores"></div>
+        </div>
+        
+        <div class="comparison" id="comparison">
+            <h2>📊 Head-to-Head Comparison</h2>
+            
+            <div class="sellthrough-gauge">
+                <h3 style="text-align: center; color: #495057; margin-bottom: 15px;">📈 Sell-Through Rate (End of Week 10)</h3>
+                <div class="gauge-container">
+                    <div class="gauge">
+                        <div class="gauge-label">AllInStore Strategy</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill gauge-fill-AllInStore" id="AllInStore-gauge" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                    <div class="gauge">
+                        <div class="gauge-label">Agile Strategy</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill gauge-fill-agile" id="agile-gauge" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-grid" id="comparison-grid"></div>
+            
+            <div class="insight">
+                <strong>💡 Strategic Insight:</strong> <span id="insight-text"></span>
+            </div>
+        </div>
+        
+        <div class="strategies" id="strategies">
+            <div class="strategy-card">
+                <div class="strategy-header AllInStore-header">
+                    ❌ AllInStore Strategy (0% Central)
+                </div>
+                
+                <div id="AllInStore-timelines"></div>
+                
+                <div class="pnl" id="AllInStore-pnl"></div>
+            </div>
+            
+            <div class="strategy-card">
+                <div class="strategy-header agile-header">
+                    ✅ Agile Strategy (<span id="agile-percent">40</span>% Central)
+                </div>
+                
+                <div id="agile-timelines"></div>
+                
+                <div class="pnl" id="agile-pnl"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const STORES = [
+            { name: '🗼 Paris', id: 'paris' },
+            { name: '🗾 Tokyo', id: 'tokyo' },
+            { name: '🗽 New York', id: 'ny' }
+        ];
+        
+        const WEEKS = 10;
+        const AVG_DICE = 3.5;
+        const INITIAL_STOCK_PER_STORE = AVG_DICE * WEEKS;
+        const TOTAL_BUDGET = INITIAL_STOCK_PER_STORE * 3;
+        
+        let currentDemandPattern = null;
+        
+        document.getElementById('centralPercent').addEventListener('input', function(e) {
+            document.getElementById('centralValue').textContent = e.target.value;
+        });
+        
+        document.getElementById('grossMargin').addEventListener('input', function(e) {
+            document.getElementById('grossMarginValue').textContent = e.target.value;
+        });
+        
+        document.getElementById('markdownRate').addEventListener('input', function(e) {
+            document.getElementById('markdownValue').textContent = e.target.value;
+        });
+        
+        function rollDice() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+        
+        function weeklyDemandFromDice(roll) {
+            return roll;
+        }
+        
+        function getDemandLabel(roll) {
+            if (roll >= 5) return { label: 'HIGH', class: 'demand-high' };
+            if (roll >= 3) return { label: 'MEDIUM', class: 'demand-medium' };
+            return { label: 'LOW', class: 'demand-low' };
+        }
+        
+        function renderDemandPreview(demandPattern) {
+            const container = document.getElementById('demand-stores');
+            container.innerHTML = '';
+            
+            STORES.forEach((store, idx) => {
+                const roll = demandPattern[idx];
+                const demand = weeklyDemandFromDice(roll);
+                const info = getDemandLabel(roll);
+                const diceSymbol = ['⚀','⚁','⚂','⚃','⚄','⚅'][roll - 1];
+                
+                const div = document.createElement('div');
+                div.className = 'demand-store';
+                div.innerHTML = `
+                    <div class="demand-store-name">${store.name}</div>
+                    <div class="demand-dice">${diceSymbol}</div>
+                    <div class="demand-level ${info.class}">
+                        ${info.label} Demand<br>
+                        €${demand}M per week<br>
+                        (for all 10 weeks)
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            document.getElementById('demand-preview').style.display = 'block';
+        }
+        
+        function simulateAllInStore(demandPattern, markdownRate, grossMargin) {
+            const storeAllocation = INITIAL_STOCK_PER_STORE;
+            const results = {
+                stores: {},
+                totalRevenue: 0,
+                totalMarkdown: 0,
+                totalStockout: 0,
+                initialStock: TOTAL_BUDGET
+            };
+            
+            STORES.forEach((store, idx) => {
+                const weeklyDemand = weeklyDemandFromDice(demandPattern[idx]);
+                let inventory = storeAllocation;
+                const weeks = [];
+                let totalSold = 0;
+                let totalStockout = 0;
+                
+                for (let week = 0; week < WEEKS; week++) {
+                    const sold = Math.min(inventory, weeklyDemand);
+                    const stockout = Math.max(0, weeklyDemand - inventory);
+                    
+                    inventory -= sold;
+                    totalSold += sold;
+                    totalStockout += stockout;
+                    
+                    weeks.push({
+                        week: week + 1,
+                        sold,
+                        stockout,
+                        inventory,
+                        demand: weeklyDemand
+                    });
+                }
+                
+// Calculate unsold inventory
+const unsoldInventory = inventory; // What's left after 10 weeks
+
+// Discount scenario: unsold items sold at reduced price
+const discountedRevenue = unsoldInventory * (1 - markdownRate);
+// Example: €10M unsold × (1 - 50%) = €5M clearance revenue
+
+results.stores[store.id] = {
+    name: store.name,
+    weeks,
+    totalSold,
+    totalStockout,
+    unsoldInventory,
+    discountedRevenue,
+    demandRoll: demandPattern[idx]
+};
+
+results.totalRevenue += totalSold;
+results.totalStockout += totalStockout;
+results.totalDiscountedRevenue = (results.totalDiscountedRevenue || 0) + discountedRevenue;
+
+            });
+            
+// Full-price margin
+const marginOnFullPrice = results.totalRevenue * grossMargin;
+
+// Discounted sales margin (typically much lower or negative)
+// Assume cost = revenue / (1 + grossMargin)
+// For discounted items, margin = discountedRevenue - cost
+const costBasis = results.totalDiscountedRevenue / (1 - markdownRate); // Original cost
+const marginOnDiscounted = results.totalDiscountedRevenue - costBasis;
+// This will be NEGATIVE if discount > gross margin
+
+// Total margin = full price margin + discounted margin
+const totalMargin = marginOnFullPrice + marginOnDiscounted;
+
+results.totalMargin = totalMargin;
+results.totalDiscountedRevenue = results.totalDiscountedRevenue || 0;
+results.totalCombinedRevenue = results.totalRevenue + results.totalDiscountedRevenue;
+results.netMargin = results.totalCombinedRevenue > 0 
+    ? (totalMargin / results.totalCombinedRevenue) * 100 
+    : 0;
+results.sellThrough = (results.totalRevenue / results.initialStock) * 100;
+results.discountSellThrough = ((results.totalRevenue + results.totalDiscountedRevenue) / results.initialStock) * 100;
+            
+            return results;
+        }
+        
+        function simulateAgile(demandPattern, centralPercent, leadTime, markdownRate, grossMargin) {
+            const centralStock = (TOTAL_BUDGET * centralPercent) / 100;
+            const storeAllocation = (TOTAL_BUDGET - centralStock) / 3;
+            
+            const results = {
+                stores: {},
+                totalRevenue: 0,
+                totalMarkdown: 0,
+                totalStockout: 0,
+                centralRemaining: centralStock,
+                initialStock: TOTAL_BUDGET,
+                centralStock: []
+            };
+            
+            const storeInventories = {};
+            
+            STORES.forEach((store, idx) => {
+                storeInventories[store.id] = storeAllocation;
+                
+                results.stores[store.id] = {
+                    name: store.name,
+                    weeks: [],
+                    totalSold: 0,
+                    totalStockout: 0,
+                    markdown: 0,
+                    demandRoll: demandPattern[idx]
+                };
+            });
+            
+            // WEEK 1
+            STORES.forEach((store, idx) => {
+                const weeklyDemand = weeklyDemandFromDice(demandPattern[idx]);
+                const inventory = storeInventories[store.id];
+                const sold = Math.min(inventory, weeklyDemand);
+                const stockout = Math.max(0, weeklyDemand - inventory);
+                
+                storeInventories[store.id] -= sold;
+                results.stores[store.id].totalSold += sold;
+                results.stores[store.id].totalStockout += stockout;
+                results.totalRevenue += sold;
+                results.totalStockout += stockout;
+                
+                results.stores[store.id].weeks.push({
+                    week: 1,
+                    sold,
+                    stockout,
+                    inventory: storeInventories[store.id],
+                    demand: weeklyDemand,
+                    replenishment: 0
+                });
+            });
+            
+            results.centralStock.push({
+                week: 1,
+                stock: centralStock,
+                deployed: 0
+            });
+            
+            // CALCULATE REPLENISHMENT
+            const replenishmentArrivalWeek = 1 + 1 + leadTime;
+            const optimalAllocation = {};
+            
+            if (centralStock > 0 && replenishmentArrivalWeek <= WEEKS) {
+                const recoverableWeeks = WEEKS - replenishmentArrivalWeek + 1;
+                const missedSales = {};
+                let totalMissedSales = 0;
+                
+                STORES.forEach((store, idx) => {
+                    const weeklyDemand = weeklyDemandFromDice(demandPattern[idx]);
+                    const currentStock = storeInventories[store.id];
+                    const weeksBeforeArrival = replenishmentArrivalWeek - 2;
+                    const stockConsumedBeforeArrival = weeklyDemand * weeksBeforeArrival;
+                    const stockAtArrival = Math.max(0, currentStock - stockConsumedBeforeArrival);
+                    const demandInRecoverablePeriod = weeklyDemand * recoverableWeeks;
+                    const missed = Math.max(0, demandInRecoverablePeriod - stockAtArrival);
+                    
+                    missedSales[store.id] = missed;
+                    totalMissedSales += missed;
+                });
+                
+                if (totalMissedSales > 0) {
+                    STORES.forEach(store => {
+                        const proportion = missedSales[store.id] / totalMissedSales;
+                        optimalAllocation[store.id] = centralStock * proportion;
+                    });
+                }
+            }
+            
+            // WEEKS 2-10
+            for (let week = 1; week < WEEKS; week++) {
+                let weekDeployed = 0;
+                
+                STORES.forEach((store, idx) => {
+                    const weeklyDemand = weeklyDemandFromDice(demandPattern[idx]);
+                    let inventory = storeInventories[store.id];
+                    
+                    let replenishment = 0;
+                    if (week + 1 === replenishmentArrivalWeek && optimalAllocation[store.id]) {
+                        replenishment = optimalAllocation[store.id];
+                        inventory += replenishment;
+                        storeInventories[store.id] += replenishment;
+                        results.centralRemaining -= replenishment;
+                        weekDeployed += replenishment;
+                    }
+                    
+                    const sold = Math.min(inventory, weeklyDemand);
+                    const stockout = Math.max(0, weeklyDemand - inventory);
+                    
+                    storeInventories[store.id] -= sold;
+                    results.stores[store.id].totalSold += sold;
+                    results.stores[store.id].totalStockout += stockout;
+                    results.totalRevenue += sold;
+                    results.totalStockout += stockout;
+                    
+                    results.stores[store.id].weeks.push({
+                        week: week + 1,
+                        sold,
+                        stockout,
+                        inventory: storeInventories[store.id],
+                        demand: weeklyDemand,
+                        replenishment
+                    });
+                });
+                
+                results.centralStock.push({
+                    week: week + 1,
+                    stock: results.centralRemaining,
+                    deployed: weekDeployed
+                });
+            }
+            
+results.totalDiscountedRevenue = 0;
+
+STORES.forEach(store => {
+    const unsold = storeInventories[store.id];
+    const discountedRevenue = unsold * (1 - markdownRate);
+    results.stores[store.id].unsoldInventory = unsold;
+    results.stores[store.id].discountedRevenue = discountedRevenue;
+    results.totalDiscountedRevenue += discountedRevenue;
+});
+
+// Central stock also sold at discount
+const centralDiscountedRevenue = results.centralRemaining * (1 - markdownRate);
+results.totalDiscountedRevenue += centralDiscountedRevenue;
+results.centralDiscountedRevenue = centralDiscountedRevenue;
+            
+            // Calculate total margin
+// Full-price margin
+const marginOnFullPrice = results.totalRevenue * grossMargin;
+
+// Discounted sales margin
+const costBasis = results.totalDiscountedRevenue / (1 - markdownRate);
+const marginOnDiscounted = results.totalDiscountedRevenue - costBasis;
+
+// Total margin
+const totalMargin = marginOnFullPrice + marginOnDiscounted;
+
+results.totalMargin = totalMargin;
+results.totalCombinedRevenue = results.totalRevenue + results.totalDiscountedRevenue;
+results.netMargin = results.totalCombinedRevenue > 0 
+    ? (totalMargin / results.totalCombinedRevenue) * 100 
+    : 0;
+results.sellThrough = (results.totalRevenue / results.initialStock) * 100;
+results.discountSellThrough = ((results.totalRevenue + results.totalDiscountedRevenue) / results.initialStock) * 100;
+            
+            return results;
+        }
+        
+        function renderTimeline(containerId, results, showCentral = false) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // LEGEND
+            const legendDiv = document.createElement('div');
+            legendDiv.className = 'legend';
+            legendDiv.innerHTML = `
+                <div class="legend-title">📊 Legend:</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-box legend-sold"></div>
+                        <span>Sales</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box legend-stockout"></div>
+                        <span>Missed sales</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box legend-inventory"></div>
+                        <span>Stock remaining</span>
+                    </div>
+                    ${showCentral ? `
+                        <div class="legend-item">
+                            <div class="legend-box legend-replenish"></div>
+                            <span>Replenishment</span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            container.appendChild(legendDiv);
+            
+            // STORE TIMELINES
+            STORES.forEach(store => {
+                const storeData = results.stores[store.id];
+                const diceSymbol = ['⚀','⚁','⚂','⚃','⚄','⚅'][storeData.demandRoll - 1];
+                const weeklyDemand = weeklyDemandFromDice(storeData.demandRoll);
+                
+                const timelineDiv = document.createElement('div');
+                timelineDiv.className = 'store-timeline';
+                
+                let headerHTML = `
+                    <div class="store-timeline-header">
+                        <span>${storeData.name}</span>
+                        <span class="store-demand-info">${diceSymbol} = €${weeklyDemand}M/week</span>
+                    </div>
+                    <div class="week-grid">
+                `;
+                
+                storeData.weeks.forEach((weekData) => {
+                    headerHTML += `
+                        <div class="week-cell">
+                            <div class="week-number">W${weekData.week}</div>
+                            ${weekData.replenishment > 0 ? `<div class="week-stat replenish">+€${weekData.replenishment.toFixed(1)}M</div>` : ''}
+                            ${weekData.sold > 0 ? `<div class="week-stat sold">€${weekData.sold.toFixed(1)}M</div>` : ''}
+                            ${weekData.stockout > 0 ? `<div class="week-stat stockout">-€${weekData.stockout.toFixed(1)}M</div>` : ''}
+                            <div class="week-stat inventory">€${weekData.inventory.toFixed(1)}M</div>
+                        </div>
+                    `;
+                });
+                
+                headerHTML += '</div>';
+                timelineDiv.innerHTML = headerHTML;
+                container.appendChild(timelineDiv);
+            });
+            
+            // CENTRAL STOCK LINE (Agile only)
+            if (showCentral && results.centralStock && results.centralStock.length > 0) {
+                const centralDiv = document.createElement('div');
+                centralDiv.className = 'store-timeline';
+                
+                let centralHTML = `
+                    <div class="store-timeline-header" style="background: #fff3bf; border-color: #f08c00;">
+                        <span>🏢 Central Stock</span>
+                        <span class="store-demand-info">Reserve inventory</span>
+                    </div>
+                    <div class="week-grid">
+                `;
+                
+                results.centralStock.forEach((weekData) => {
+                    centralHTML += `
+                        <div class="week-cell">
+                            <div class="week-number">W${weekData.week}</div>
+                            ${weekData.deployed > 0 ? `<div class="week-stat replenish">-€${weekData.deployed.toFixed(1)}M</div>` : ''}
+                            <div class="week-stat inventory">€${weekData.stock.toFixed(1)}M</div>
+                        </div>
+                    `;
+                });
+                
+                centralHTML += '</div>';
+                centralDiv.innerHTML = centralHTML;
+                container.appendChild(centralDiv);
+            }
+        }
+        
+function renderPnL(containerId, results) {
+    const container = document.getElementById(containerId);
+    
+    container.innerHTML = `
+        <div class="pnl-row">
+            <span class="pnl-label">Initial Stock</span>
+            <span class="pnl-value">€${results.initialStock.toFixed(0)}M</span>
+        </div>
+        <div class="pnl-row">
+            <span class="pnl-label">Full-Price Revenue</span>
+            <span class="pnl-value positive">€${results.totalRevenue.toFixed(1)}M</span>
+        </div>
+        <div class="pnl-row">
+            <span class="pnl-label">Discounted Revenue</span>
+            <span class="pnl-value">€${(results.totalDiscountedRevenue || 0).toFixed(1)}M</span>
+        </div>
+        <div class="pnl-row">
+            <span class="pnl-label">Total Revenue</span>
+            <span class="pnl-value positive">€${(results.totalCombinedRevenue || results.totalRevenue).toFixed(1)}M</span>
+        </div>
+        <div class="pnl-row">
+            <span class="pnl-label">Full-Price Sell-Through</span>
+            <span class="pnl-value ${results.sellThrough >= 85 ? 'positive' : results.sellThrough >= 70 ? '' : 'negative'}">${results.sellThrough.toFixed(1)}%</span>
+        </div>
+
+        ${results.totalStockout > 0 ? `
+            <div class="pnl-row">
+                <span class="pnl-label">Lost Sales (Stockouts)</span>
+                <span class="pnl-value negative">-€${results.totalStockout.toFixed(1)}M</span>
+            </div>
+        ` : ''}
+        <div class="pnl-row">
+            <span class="pnl-label">TOTAL MARGIN</span>
+            <span class="pnl-value ${results.totalMargin > 0 ? 'positive' : 'negative'}">
+                €${results.totalMargin.toFixed(1)}M
+            </span>
+        </div>
+        <div class="pnl-row">
+            <span class="pnl-label">Net Margin %</span>
+            <span class="pnl-value ${results.netMargin > 20 ? 'positive' : results.netMargin > 0 ? '' : 'negative'}">
+                ${results.netMargin.toFixed(1)}%
+            </span>
+        </div>
+    `;
+}
+
+        
+        function renderComparison(AllInStoreResults, agileResults, centralPercent, leadTime) {
+            const marginDiff = agileResults.totalMargin - AllInStoreResults.totalMargin;
+            const revenueDiff = agileResults.totalRevenue - AllInStoreResults.totalRevenue;
+// Calculate unsold inventory difference
+const allInStoreUnsold = AllInStoreResults.initialStock - AllInStoreResults.totalRevenue;
+const agileUnsold = agileResults.initialStock - agileResults.totalRevenue;
+const markdownDiff = allInStoreUnsold - agileUnsold; 
+// Positive = Agile had less unsold inventory (better full-price sell-through)
+
+            const sellThroughDiff = agileResults.sellThrough - AllInStoreResults.sellThrough;
+            const percentGain = AllInStoreResults.totalMargin !== 0 ? ((marginDiff / Math.abs(AllInStoreResults.totalMargin)) * 100).toFixed(1) : 0;
+            
+            setTimeout(() => {
+                document.getElementById('AllInStore-gauge').style.width = AllInStoreResults.sellThrough + '%';
+                document.getElementById('AllInStore-gauge').textContent = AllInStoreResults.sellThrough.toFixed(1) + '%';
+                document.getElementById('agile-gauge').style.width = agileResults.sellThrough + '%';
+                document.getElementById('agile-gauge').textContent = agileResults.sellThrough.toFixed(1) + '%';
+            }, 100);
+            
+            const grid = document.getElementById('comparison-grid');
+            grid.innerHTML = `
+                <div class="comparison-item ${sellThroughDiff > 0 ? 'winner' : sellThroughDiff < 0 ? 'loser' : 'neutral'}">
+                    <h3>Sell-Through</h3>
+                    <div class="value">${agileResults.sellThrough.toFixed(1)}%</div>
+                    <div>${sellThroughDiff > 0 ? '+' : ''}${sellThroughDiff.toFixed(1)} pts vs AllInStore</div>
+                </div>
+                <div class="comparison-item ${revenueDiff > 0 ? 'winner' : revenueDiff < 0 ? 'loser' : 'neutral'}">
+                    <h3>Sales at Full Price</h3>
+                    <div class="value">€${agileResults.totalRevenue.toFixed(1)}M</div>
+                    <div>${revenueDiff > 0 ? '+' : ''}€${revenueDiff.toFixed(1)}M vs AllInStore</div>
+                </div>
+<div class="comparison-item ${markdownDiff > 0 ? 'winner' : 'loser'}">
+    <h3>Less Unsold Inventory</h3>
+    <div class="value">€${Math.abs(markdownDiff).toFixed(1)}M</div>
+    <div>${markdownDiff > 0 ? 'less discounting needed' : 'more discounting needed'}</div>
+</div>
+
+                <div class="comparison-item ${marginDiff > 0 ? 'winner' : marginDiff < 0 ? 'loser' : 'neutral'}">
+                    <h3>Total Margin</h3>
+                    <div class="value">€${agileResults.totalMargin.toFixed(1)}M</div>
+                    <div>${marginDiff > 0 ? '+' : ''}€${marginDiff.toFixed(1)}M vs AllInStore</div>
+                </div>
+                <div class="comparison-item neutral">
+                    <h3>Configuration</h3>
+                    <div class="value">${centralPercent}%</div>
+                    <div>${leadTime}wk lead time</div>
+                </div>
+            `;
+            
+            let insightText = '';
+            
+            if (marginDiff > 0) {
+                insightText = `With ${centralPercent}% central reserve and ${leadTime}-week lead time, Agile achieved <strong>${agileResults.sellThrough.toFixed(1)}% sell-through</strong> vs. AllInStore's <strong>${AllInStoreResults.sellThrough.toFixed(1)}%</strong>. `;
+                
+                if (markdownDiff > 2) {
+                    insightText += `Key driver: <strong>€${markdownDiff.toFixed(1)}M markdown savings</strong> by redeploying stock from low-demand to high-demand stores. `;
+                }
+                
+                insightText += `<strong>Total margin gain: €${marginDiff.toFixed(1)}M (${percentGain}% improvement)</strong>. In an industry where 60% sell-through is typical, achieving ${agileResults.sellThrough.toFixed(0)}% is transformational.`;
+                
+            } else if (marginDiff < 0) {
+                if (centralPercent < 30) {
+                    insightText = `With only ${centralPercent}% central stock, there wasn't enough reserve to respond to stockouts. <strong>Try 40-50% central allocation</strong> to unlock agility's potential—you need meaningful reserves to be responsive.`;
+                } else if (leadTime >= 3) {
+                    insightText = `Agility underperformed by €${Math.abs(marginDiff).toFixed(1)}M. <strong>Root cause: ${leadTime}-week lead time too slow.</strong> Try 1-2 weeks to see responsive replenishment work.`;
+                } else {
+                    insightText = `AllInStore won this time (€${Math.abs(marginDiff).toFixed(1)}M), but both achieved similar sell-through. <strong>Run multiple scenarios</strong>—agility wins on average by reducing variance.`;
+                }
+            } else {
+                insightText = `Perfect tie at €${AllInStoreResults.totalMargin.toFixed(1)}M margin. Try adjusting parameters to see sensitivity.`;
+            }
+            
+            document.getElementById('insight-text').innerHTML = insightText;
+            document.getElementById('comparison').style.display = 'block';
+        }
+        
+function rollNewDice() {
+    currentDemandPattern = [rollDice(), rollDice(), rollDice()];
+    runSimulation();
+    document.getElementById('rerunBtn').style.display = 'block';
+}
+
+function rerunSimulation() {
+    if (currentDemandPattern) {
+        runSimulation();
+    }
+}
+
+        
+        function runSimulation() {
+            if (!currentDemandPattern) {
+                currentDemandPattern = [rollDice(), rollDice(), rollDice()];
+            }
+            
+            const centralPercent = parseInt(document.getElementById('centralPercent').value);
+            const leadTime = parseInt(document.getElementById('leadTime').value);
+            const markdownRate = parseInt(document.getElementById('markdownRate').value) / 100;
+            const grossMargin = parseInt(document.getElementById('grossMargin').value) / 100;
+            
+            renderDemandPreview(currentDemandPattern);
+            
+            document.getElementById('agile-percent').textContent = centralPercent;
+            
+            const AllInStoreResults = simulateAllInStore(currentDemandPattern, markdownRate, grossMargin);
+            const agileResults = simulateAgile(currentDemandPattern, centralPercent, leadTime, markdownRate, grossMargin);
+            
+            renderTimeline('AllInStore-timelines', AllInStoreResults, false);
+            renderTimeline('agile-timelines', agileResults, true);
+            
+            renderPnL('AllInStore-pnl', AllInStoreResults);
+            renderPnL('agile-pnl', agileResults);
+            
+            renderComparison(AllInStoreResults, agileResults, centralPercent, leadTime);
+            
+            document.getElementById('strategies').style.display = 'grid';
+            document.getElementById('rerunBtn').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
